@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property file="${logback.properties.file}" />
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 综合时间与大小的滚动策略，先按小时滚动，小时内的文件大于10mb时再按大小滚动 -->
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/data/logs/db-flake/db-flake.log.tmp</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/data/logs/db-flake/db-flake-%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${file.log.pattern}</pattern>
+        </encoder>
+    </appender>
+	
+	  <!-- 按文件大小滚动的策略 -->
+    <appender name="metricsLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/data/logs/db-flake/trace/metrics.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>/data/logs/db-flake/trace/metrics.%i.log</fileNamePattern>
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <appender name ="async" class= "ch.qos.logback.classic.AsyncAppender">
+          <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+          <discardingThreshold >0</discardingThreshold>
+          <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+          <queueSize>256</queueSize>
+          <!-- 添加附加的appender,最多只能添加一个 -->
+          <appender-ref ref ="metricsLogFile"/>    
+     </appender>
+
+     <logger name="metrics" level="INFO" additivity="false">
+               <appender-ref ref="async" />
+     </logger>
+    
+    <!-- project default level -->
+    <logger name="com.juanpi" level="${logback.log.level}"/>
+
+    <root level="${logback.log.level}">
+        ${logback.log.console}
+        <appender-ref ref="rollingFile"/>
+    </root>
+</configuration>
