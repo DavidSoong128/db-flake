@@ -42,6 +42,7 @@ public class Constants {
 
 
     public static final String FLAKE_REDIS_QUEUE = "flake.redis.queue";
+    public static final String FLAKE_KAFKA_TOPIC = "flake.kafka.topic";
     public static final String REDIS_QUEUE_TYPE = "redis";
     public static final String KAFKA_QUEUE_TYPE = "kafka";
 

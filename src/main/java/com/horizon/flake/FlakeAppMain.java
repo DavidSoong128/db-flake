@@ -25,10 +25,10 @@ public class FlakeAppMain {
         startApp();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                stopApp();
                 logger.info("service " + FlakeAppMain.class.getSimpleName() + " stopped!");
                 synchronized (FlakeAppMain.class) {
                     running = false;
+                    stopApp();
                     FlakeAppMain.class.notify();
                 }
             }
@@ -46,8 +46,10 @@ public class FlakeAppMain {
     private static void startApp() {
         if(Constants.QUEUE_TYPE.equals(Constants.REDIS_QUEUE_TYPE)){
             messageClient = new RedisMessageClient();
-        }else{
+        }else if(Constants.KAFKA_QUEUE_TYPE.equals(Constants.QUEUE_TYPE)){
             messageClient = new KafkaMessageClient();
+        }else{
+            throw new IllegalArgumentException("queue.type config not correct!");
         }
         messageClient.startRead();
         logger.info("handle message client start success !");
