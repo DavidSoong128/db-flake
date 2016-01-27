@@ -15,9 +15,9 @@ import java.util.concurrent.Executors;
  */
 public class ExecuteThreadPool {
 
-    private Map<Integer,ExecutorService> threadPoolMap;
+    private Map<Integer, ExecutorService> threadPoolMap;
 
-    private ExecuteThreadPool(){
+    private ExecuteThreadPool() {
         threadPoolMap = new HashMap<>();
         for (int i = 0; i <= Constants.FLAKE_THREAD_POOL_SIZE; i++) {
             //这里之所以为单线程，是为了保证处理的顺序性
@@ -25,19 +25,19 @@ public class ExecuteThreadPool {
         }
     }
 
-    private static class ThreadPoolHolder{
+    private static class ThreadPoolHolder {
         private static ExecuteThreadPool threadPool = new ExecuteThreadPool();
     }
 
-    public static ExecuteThreadPool poolHolder(){
+    public static ExecuteThreadPool poolHolder() {
         return ThreadPoolHolder.threadPool;
     }
 
-    public ExecutorService getThreadPool(Integer threadId){
+    public ExecutorService getThreadPool(Integer threadId) {
         return threadPoolMap.get(threadId);
     }
 
-    public void shutdown(){
+    public void shutdown() {
         for (int i = 0; i <= Constants.FLAKE_THREAD_POOL_SIZE; i++) {
             threadPoolMap.get(i).shutdown();
         }

@@ -9,20 +9,21 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisSingleHandler {
-    
+
     private Logger log = LoggerFactory.getLogger(RedisSingleHandler.class);
-   
-	private FstSerializer serializer = new FstSerializer();
-    
+
+    private FstSerializer serializer = new FstSerializer();
+
     private JedisPool pool;
 
-    private RedisSingleHandler(){}
+    private RedisSingleHandler() {
+    }
 
-    private static class RedisSingleHolder{
+    private static class RedisSingleHolder {
         private static RedisSingleHandler redisHolder = new RedisSingleHandler();
     }
 
-    public static RedisSingleHandler redisHolder(){
+    public static RedisSingleHandler redisHolder() {
         return RedisSingleHolder.redisHolder;
     }
 
@@ -36,15 +37,15 @@ public class RedisSingleHandler {
         }
         return pool.getResource();
     }
-    
-    public void returnResource(Jedis jedis){
-        if(null != jedis){
+
+    public void returnResource(Jedis jedis) {
+        if (null != jedis) {
             pool.returnResourceObject(jedis);
         }
     }
-    
-    public void lpushDBEvent(String key,Object event){
-    	Jedis jedis = null;
+
+    public void lpushDBEvent(String key, Object event) {
+        Jedis jedis = null;
         try {
             jedis = getJedis();
             byte[] keys = key.getBytes();
@@ -56,9 +57,9 @@ public class RedisSingleHandler {
             this.returnResource(jedis);
         }
     }
-    
-    public long llen(String key){
-    	Jedis jedis = null;
+
+    public long llen(String key) {
+        Jedis jedis = null;
         try {
             jedis = getJedis();
             byte[] keys = key.getBytes();
@@ -70,16 +71,16 @@ public class RedisSingleHandler {
         }
         return 0;
     }
-    
-    public Object rPopDBEvent(String key){
+
+    public Object rPopDBEvent(String key) {
         Jedis jedis = null;
         Object event = null;
         try {
             jedis = getJedis();
             byte[] keys = key.getBytes();
             byte[] data = jedis.rpop(keys);
-            if(null != data){
-            	event = serializer.deserialize(data);
+            if (null != data) {
+                event = serializer.deserialize(data);
             }
         } catch (Exception e) {
             log.error("jedis getDBEvent error", e);
@@ -88,5 +89,5 @@ public class RedisSingleHandler {
         }
         return event;
     }
-    
+
 }

@@ -10,7 +10,7 @@ public interface MessageClient {
     /**
      * 从队列中读取数据，开始处理
      */
-    public void startRead();
+    public void startProcess();
 
-    public void stopRead();
+    public void stopProcess();
 }

@@ -140,9 +140,11 @@ public class EventSqlParser {
                         Integer intValue = (Integer) value;
                         if (intValue < 0) {
                             value = Math.abs(intValue);
-                            updateColumnStr.append(iterator.hasNext() ? column.name() + "=" + column.name() + "-?," : column.name() + "=" + column.name() + "-?");
+                            updateColumnStr.append(iterator.hasNext() ? column.name() + "=" + column.name() + "-?," :
+                                    column.name() + "=" + column.name() + "-?");
                         } else {
-                            updateColumnStr.append(iterator.hasNext() ? column.name() + "=" + column.name() + "+?," : column.name() + "=" + column.name() + "+?");
+                            updateColumnStr.append(iterator.hasNext() ? column.name() + "=" + column.name() + "+?," :
+                                    column.name() + "=" + column.name() + "+?");
                         }
                     } else {
                         updateColumnStr.append(iterator.hasNext() ? column.name() + "=?," : column.name() + "=?");

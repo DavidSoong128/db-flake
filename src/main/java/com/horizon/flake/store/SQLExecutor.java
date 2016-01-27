@@ -24,15 +24,15 @@ public class SQLExecutor {
 
     private EventSqlParser eventSqlParser = EventSqlParser.sqlParser();
 
-    private static class SQLHolder{
+    private static class SQLHolder {
         private static SQLExecutor sqlExecutor = new SQLExecutor();
     }
 
-    public static SQLExecutor sqlHolder(){
+    public static SQLExecutor sqlHolder() {
         return SQLHolder.sqlExecutor;
     }
 
-    public void executeSql(Object obj){
+    public void executeSql(Object obj) {
         Connection connection = null;
         PreparedStatement statement = null;
         String sql = null;
@@ -40,10 +40,10 @@ public class SQLExecutor {
         try {
             connection = dataSourcePool.getConnection();
             Map<String, List<Object>> tableMap = eventSqlParser.sqlParser(obj);
-            if(null != tableMap && tableMap.size() > 0){
+            if (null != tableMap && tableMap.size() > 0) {
                 sql = tableMap.keySet().iterator().next();
                 parameterList = tableMap.get(sql);
-            }else{
+            } else {
                 logger.error("parse object orm error,obj {}", JsonUtil.ObjectToJson(obj));
                 return;
             }
@@ -54,8 +54,9 @@ public class SQLExecutor {
             statement.execute();
             logger.info("execute sql:" + sql + ";parameterList:" + JsonUtil.ObjectToJson(parameterList));
         } catch (Exception ex) {
-            logger.error("execute sql exception:'" + sql + "';parameterList:'" + JsonUtil.ObjectToJson(parameterList), ex);
-        } finally{
+            logger.error("execute sql exception:'" + sql + "';parameterList:'" + JsonUtil.ObjectToJson(parameterList)
+                    , ex);
+        } finally {
             dataSourcePool.closeStatement(statement);
             dataSourcePool.closeConn(connection);
         }

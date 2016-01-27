@@ -18,27 +18,25 @@ import java.util.concurrent.Executors;
  * <pre>
  *    handle the message from redis queue
  * </pre>
+ *
  * @author : David.Song/Java Engineer
  * @date : 2016/1/15 17:47
  * @see
  * @since : 1.0.0
  */
-public class RedisMessageClient implements MessageClient{
+public class RedisMessageClient implements MessageClient {
 
     private Logger logger = LoggerFactory.getLogger(RedisMessageClient.class);
 
     private ExecutorService executorPool;
     private RingBufferQueue ringBufferQueue;
-    private EventSqlHandler sqlHandler;
 
-    public RedisMessageClient(){
-        sqlHandler = EventSqlHandler.sqlHandler();
-        ringBufferQueue = new RingBufferQueue(new EventWorkHandler(sqlHandler),Constants.N_THREADS,
-                                                                               Constants.BUFFER_SIZE);
+    public RedisMessageClient(RingBufferQueue queue) {
+        ringBufferQueue = queue;
         executorPool = Executors.newFixedThreadPool(1);
     }
 
-    public void startRead(){
+    public void startProcess() {
         final Transfer transfer = new Transfer();
         executorPool.submit(new Runnable() {
             @Override
@@ -56,61 +54,60 @@ public class RedisMessageClient implements MessageClient{
         });
     }
 
-    public void stopRead(){
-        executorPool.shutdown();
-        ringBufferQueue.shutdown();
-        sqlHandler.stopHandle();
-    }
-
-    class Transfer{
-
+    class Transfer {
         private long startCheckTime = System.currentTimeMillis();
         private void beginHandle(String routQueueName) throws InterruptedException {
-            while(true){
-                try{
+            while (true) {
+                try {
                     //默认30s检查下数据库链接
-                    if(System.currentTimeMillis() - startCheckTime > 30000){
-                        if(!this.checkDbIsConnect()){
+                    if (System.currentTimeMillis() - startCheckTime > 30000) {
+                        if (!this.checkDbIsConnect()) {
                             Thread.sleep(Constants.QUEUE_SLEEP_INTERVAL);
                             continue;
                         }
                     }
                     Object dbEvent = RedisSingleHandler.redisHolder().rPopDBEvent(routQueueName);
-                    if(dbEvent == null){
-                        logger.debug("queue {} is empty,wait {} ms",routQueueName, Constants.QUEUE_SLEEP_INTERVAL);
+                    if (dbEvent == null) {
+                        logger.debug("queue {} is empty,wait {} ms", routQueueName, Constants.QUEUE_SLEEP_INTERVAL);
                         Thread.sleep(Constants.QUEUE_SLEEP_INTERVAL);
                         continue;
                     }
                     logger.info("receive event message {} ", JsonUtil.ObjectToJson(dbEvent));
                     ringBufferQueue.publish(dbEvent);
-                }catch(Exception ex){
-                    logger.error("read queue data ex",ex);
+                } catch (Exception ex) {
+                    logger.error("read queue data ex", ex);
                 }
             }
         }
         /**
          * 在从redis queue中读取数据的时候，如果
          * 此时发现DB链接不上，那么存储在队列，不进行处理，避免数据丢失
+         *
          * @return
          */
-        private boolean checkDbIsConnect(){
+        private boolean checkDbIsConnect() {
             Connection conn = null;
-            try{
+            try {
                 conn = DataSourcePool.poolHolder().getConnection();
-                if(conn == null || conn.isClosed()){
+                if (conn == null || conn.isClosed()) {
                     logger.error("can`t get db con and stop read data from queue");
                     return false;
                 }
                 //如果数据库一直链接不上，那么就一直检查链接
                 startCheckTime = System.currentTimeMillis();
                 return true;
-            }catch(Exception ex){
-                logger.error("getConnection error ",ex);
+            } catch (Exception ex) {
+                logger.error("getConnection error ", ex);
                 return false;
-            }finally{
+            } finally {
                 //这里必须将链接关闭，不然导致链接资源浪费
                 DataSourcePool.poolHolder().closeConn(conn);
             }
         }
+    }
+    //释放该客户端的资源
+    @Override
+    public void stopProcess() {
+        executorPool.shutdown();
     }
 }

@@ -1,5 +1,6 @@
 package com.horizon.flake;
 
+import com.horizon.flake.client.DBFlakeContext;
 import com.horizon.flake.client.KafkaMessageClient;
 import com.horizon.flake.client.MessageClient;
 import com.horizon.flake.client.RedisMessageClient;
@@ -19,7 +20,7 @@ public class FlakeAppMain {
 
     private static volatile boolean running = true;
 
-    private static MessageClient messageClient;
+    private static DBFlakeContext dbFlakeContext;
 
     public static void main(String[] args) {
         startApp();
@@ -44,18 +45,12 @@ public class FlakeAppMain {
     }
 
     private static void startApp() {
-        if(Constants.QUEUE_TYPE.equals(Constants.REDIS_QUEUE_TYPE)){
-            messageClient = new RedisMessageClient();
-        }else if(Constants.KAFKA_QUEUE_TYPE.equals(Constants.QUEUE_TYPE)){
-            messageClient = new KafkaMessageClient();
-        }else{
-            throw new IllegalArgumentException("queue.type config not correct!");
-        }
-        messageClient.startRead();
+        dbFlakeContext = new DBFlakeContext(Constants.REDIS_QUEUE_TYPE);
+        dbFlakeContext.startContext();
         logger.info("handle message client start success !");
     }
 
     private static void stopApp(){
-        messageClient.stopRead();
+        dbFlakeContext.stopContext();
     }
 }

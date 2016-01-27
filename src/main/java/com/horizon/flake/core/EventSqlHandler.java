@@ -17,21 +17,19 @@ public class EventSqlHandler {
 
     private Logger logger = LoggerFactory.getLogger(EventSqlHandler.class);
 
-    private EventSqlParser sqlParser = EventSqlParser.sqlParser();
+    private EventSqlParser    sqlParser   = EventSqlParser.sqlParser();
+    private ExecuteThreadPool threadPool  = ExecuteThreadPool.poolHolder();
+    private SQLExecutor       sqlExecutor = SQLExecutor.sqlHolder();
 
-    private ExecuteThreadPool threadPool = ExecuteThreadPool.poolHolder();
-
-    private SQLExecutor sqlExecutor = SQLExecutor.sqlHolder();
-
-    private static class Holder{
+    private static class Holder {
         private static EventSqlHandler sqlHandler = new EventSqlHandler();
     }
 
-    public static EventSqlHandler sqlHandler(){
+    public static EventSqlHandler sqlHandler() {
         return Holder.sqlHandler;
     }
 
-    public void sqlHandler(final Object dbEvent){
+    public void sqlHandler(final Object dbEvent) {
         try {
             //根据规则路由到不同的线程池，线性执行
             Integer threadId = sqlParser.routeThreadId(dbEvent);
@@ -48,7 +46,7 @@ public class EventSqlHandler {
         }
     }
 
-    public void stopHandle(){
+    public void stopHandle() {
         threadPool.shutdown();
     }
 }

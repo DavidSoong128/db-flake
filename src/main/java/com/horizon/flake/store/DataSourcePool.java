@@ -19,21 +19,21 @@ public class DataSourcePool {
 
     private Logger logger = LoggerFactory.getLogger(DataSourcePool.class);
 
-    private  BasicDataSource dataSource;
+    private BasicDataSource dataSource;
 
-    private DataSourcePool(){
+    private DataSourcePool() {
         initDataSource();
     }
 
-    private static class DataSourcePoolHolder{
+    private static class DataSourcePoolHolder {
         private static DataSourcePool dbcpHolder = new DataSourcePool();
     }
 
-    public static DataSourcePool poolHolder(){
+    public static DataSourcePool poolHolder() {
         return DataSourcePoolHolder.dbcpHolder;
     }
 
-    public Connection getConnection(){
+    public Connection getConnection() {
         Connection conn = null;
         try {
             conn = dataSource.getConnection();
@@ -43,9 +43,9 @@ public class DataSourcePool {
         return conn;
     }
 
-    public void closeConn(Connection conn){
+    public void closeConn(Connection conn) {
         try {
-            if(conn != null) {
+            if (conn != null) {
                 conn.close();
             }
         } catch (SQLException e) {
@@ -53,8 +53,8 @@ public class DataSourcePool {
         }
     }
 
-    public void closeStatement(Statement statement){
-        if(statement != null){
+    public void closeStatement(Statement statement) {
+        if (statement != null) {
             try {
                 statement.close();
             } catch (SQLException e) {
@@ -81,7 +81,7 @@ public class DataSourcePool {
         dataSource.setMinIdle(Constants.JDBC_POOL_MINIDLE);
         dataSource.setMaxIdle(Constants.JDBC_POOL_MAXIDLE);
         //4)最长等待时间:等待数据库连接的最长时间，单位为毫秒，超出将抛出异常
-        dataSource.setMaxWait(1000*5);
+        dataSource.setMaxWait(1000 * 5);
         //在空闲连接回收器线程运行期间休眠的时间值,以毫秒为单位.
         dataSource.setTimeBetweenEvictionRunsMillis(10000);
         //在每次空闲连接回收器线程(如果有)运行时检查的连接数量
